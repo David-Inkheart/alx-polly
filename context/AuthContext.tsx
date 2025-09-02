@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
-import supabase from '@/lib/supabase';
+import { createSupabaseBrowserClient } from '@/lib/supabase';
 
 type AuthContextType = {
   session: Session | null;
@@ -20,6 +20,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const supabase = createSupabaseBrowserClient();
 
   useEffect(() => {
     let active = true;
@@ -51,9 +52,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     return () => {
       active = false;
-      subscription.unsubscribe();
+      subscription?.unsubscribe();
     };
-  }, []);
+  }, []); // Remove supabase from dependencies since it's stable
 
   return (
     <AuthContext.Provider value={{ session, user, loading }}>

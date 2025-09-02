@@ -1,6 +1,9 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -8,76 +11,95 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useState } from "react";
-import supabase from "@/lib/supabase";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { signIn } from '@/lib/actions/auth';
+
+const formSchema = z.object({
+  email: z.email({ message: 'Invalid email address' }),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+});
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const router = useRouter();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setError,
+  } = useForm({
+    resolver: zodResolver(formSchema),
+  });
 
-  const handleLogin = async () => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    try {
+      const formData = new FormData();
+      formData.append('email', data.email);
+      formData.append('password', data.password);
 
-    if (error) {
-      console.error(error);
-      return;
+      await signIn(formData);
+      // The signIn action will redirect to /polls, so we don't need router.push here
+    } catch (error) {
+      setError('root', {
+        type: 'server',
+        message: error instanceof Error ? error.message : 'Login failed',
+      });
     }
-
-    router.push("/polls");
   };
 
   return (
-    <div className="flex items-center justify-center h-screen">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
-          <CardDescription>
-            Enter your email below to login to your account.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4">
-          <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="m@example.com"
-              required
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              required
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-        </CardContent>
-        <CardFooter>
-          <div className="w-full">
-            <Button className="w-full" onClick={handleLogin}>
-              Sign in
-            </Button>
-            <div className="mt-4 text-center text-sm">
-              Don't have an account?{" "}
-              <Link href="/signup" className="underline">
-                Sign up
-              </Link>
+    <div className='flex items-center justify-center h-screen'>
+      <Card className='w-full max-w-sm'>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <CardHeader>
+            <CardTitle className='text-2xl'>Login</CardTitle>
+            <CardDescription>
+              Enter your credentials to access your account.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className='grid gap-4'>
+            <div className='grid gap-2'>
+              <Label htmlFor='email'>Email</Label>
+              <Input
+                id='email'
+                type='email'
+                placeholder='m@example.com'
+                {...register('email')}
+              />
+              {errors.email && (
+                <p className='text-sm text-red-500'>{errors.email.message}</p>
+              )}
             </div>
-          </div>
-        </CardFooter>
+            <div className='grid gap-2'>
+              <Label htmlFor='password'>Password</Label>
+              <Input id='password' type='password' {...register('password')} />
+              {errors.password && (
+                <p className='text-sm text-red-500'>
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
+            {errors.root && (
+              <p className='text-sm text-red-500'>{errors.root.message}</p>
+            )}
+          </CardContent>
+          <CardFooter>
+            <div className='w-full'>
+              <Button className='w-full' type='submit' disabled={isSubmitting}>
+                {isSubmitting ? 'Logging in...' : 'Login'}
+              </Button>
+              <div className='mt-4 text-center text-sm'>
+                Don't have an account?{' '}
+                <Link href='/signup' className='underline'>
+                  Sign up
+                </Link>
+              </div>
+            </div>
+          </CardFooter>
+        </form>
       </Card>
     </div>
   );
