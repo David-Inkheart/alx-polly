@@ -35,19 +35,19 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    try {
-      const formData = new FormData();
-      formData.append('email', data.email);
-      formData.append('password', data.password);
+    const formData = new FormData();
+    formData.append('email', data.email);
+    formData.append('password', data.password);
 
-      await signIn(formData);
-      // The signIn action will redirect to /polls, so we don't need router.push here
-    } catch (error) {
+    const result = await signIn(formData);
+
+    if (!result.success) {
       setError('root', {
         type: 'server',
-        message: error instanceof Error ? error.message : 'Login failed',
+        message: result.error || 'Login failed',
       });
     }
+    // If successful, signIn will redirect to /polls automatically
   };
 
   return (

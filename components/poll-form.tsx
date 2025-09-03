@@ -16,13 +16,15 @@ const pollSchema = z.object({
 
 export default function PollForm({
   onSubmit,
+  isSubmitting: externalIsSubmitting = false,
 }: {
   onSubmit: (data: z.infer<typeof pollSchema>) => void;
+  isSubmitting?: boolean;
 }) {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting: formIsSubmitting },
     setError,
     control,
   } = useForm({
@@ -67,8 +69,14 @@ export default function PollForm({
         )}
       </div>
 
-      <Button type='submit' disabled={isSubmitting} className='w-full'>
-        {isSubmitting ? 'Creating Poll...' : 'Create Poll'}
+      <Button
+        type='submit'
+        disabled={externalIsSubmitting || formIsSubmitting}
+        className='w-full'
+      >
+        {externalIsSubmitting || formIsSubmitting
+          ? 'Creating Poll...'
+          : 'Create Poll'}
       </Button>
     </form>
   );

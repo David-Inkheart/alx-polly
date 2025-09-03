@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "db:setup": "./setup-database.sh",
+    "db:manual": "./manual-db-setup.sh"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",

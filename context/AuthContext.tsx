@@ -20,9 +20,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const supabase = createSupabaseBrowserClient();
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+
     let active = true;
 
     const getSession = async () => {
@@ -54,7 +61,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       active = false;
       subscription?.unsubscribe();
     };
-  }, []); // Remove supabase from dependencies since it's stable
+  }, [mounted]);
+
+  // Prevent hydration mismatch by showing loading state until mounted
+  if (!mounted) {
+    return (
+      <AuthContext.Provider
+        value={{ session: null, user: null, loading: true }}
+      >
+        {children}
+      </AuthContext.Provider>
+    );
+  }
 
   return (
     <AuthContext.Provider value={{ session, user, loading }}>

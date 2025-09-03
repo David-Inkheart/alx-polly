@@ -37,25 +37,20 @@ export default function SignupPage() {
     resolver: zodResolver(formSchema),
   });
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    try {
-      const formData = new FormData();
-      formData.append('email', data.email);
-      formData.append('password', data.password);
-      formData.append('fullName', data.fullName);
+    const formData = new FormData();
+    formData.append('email', data.email);
+    formData.append('password', data.password);
+    formData.append('fullName', data.fullName);
 
-      const result = await signUp(formData);
+    const result = await signUp(formData);
 
-      if (result?.success) {
-        setSuccessMessage(result.message || 'Account created successfully');
-      }
-    } catch (error) {
-      console.error('Signup error:', error);
+    if (result?.success) {
+      setSuccessMessage(result.message || 'Account created successfully');
+    } else if (result) {
       setError('root', {
         type: 'server',
         message:
-          error instanceof Error
-            ? error.message
-            : 'An unexpected error occurred. Please try again.',
+          result.error || 'An unexpected error occurred. Please try again.',
       });
     }
   };

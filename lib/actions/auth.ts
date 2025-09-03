@@ -10,11 +10,19 @@ export async function signIn(formData: FormData) {
   const password = formData.get('password') as string;
 
   if (!email || !password) {
-    throw new Error('Email and password are required');
+    return {
+      success: false,
+      error: 'Email and password are required',
+      status: 400,
+    };
   }
 
   if (!email.includes('@')) {
-    throw new Error('Please enter a valid email address');
+    return {
+      success: false,
+      error: 'Please enter a valid email address',
+      status: 400,
+    };
   }
 
   const { error } = await supabase.auth.signInWithPassword({
@@ -23,7 +31,24 @@ export async function signIn(formData: FormData) {
   });
 
   if (error) {
-    throw new Error(error.message);
+    // Differentiate between auth errors (client-side) and server errors
+    if (error?.code?.includes('invalid_credentials') ||
+        error.message.includes('Invalid login credentials') ||
+        error.message.includes('Email not confirmed') ||
+        error.message.includes('User not found')) {
+      return {
+        success: false,
+        error: error.message,
+        status: error.status, // Unauthorized - client error
+      };
+    }
+
+    // Other Supabase errors (server-side issues)
+    return {
+      success: false,
+      error: 'Authentication service temporarily unavailable',
+      status: 500,
+    };
   }
 
   revalidatePath('/', 'layout');
@@ -35,6 +60,22 @@ export async function signUp(formData: FormData) {
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
   const fullName = formData.get('fullName') as string;
+
+  if (!email || !password || !fullName) {
+    return {
+      success: false,
+      error: 'Email, password, and full name are required',
+      status: 400,
+    };
+  }
+
+  if (!email.includes('@')) {
+    return {
+      success: false,
+      error: 'Please enter a valid email address',
+      status: 400,
+    };
+  }
 
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -48,7 +89,22 @@ export async function signUp(formData: FormData) {
   });
 
   if (error) {
-    throw new Error(error.message);
+    // Handle specific signup errors
+    if (error.message.includes('User already registered') ||
+        error.message.includes('already been registered')) {
+      return {
+        success: false,
+        error: 'An account with this email already exists',
+        status: 409, // Conflict
+      };
+    }
+
+    // Other Supabase errors (server-side issues)
+    return {
+      success: false,
+      error: 'Registration service temporarily unavailable',
+      status: 500,
+    };
   }
 
   // If user is immediately signed in (email confirmation disabled)
@@ -70,7 +126,11 @@ export async function signOut() {
   const { error } = await supabase.auth.signOut();
 
   if (error) {
-    throw new Error(error.message);
+    return {
+      success: false,
+      error: 'Sign out failed',
+      status: 500,
+    };
   }
 
   revalidatePath('/', 'layout');

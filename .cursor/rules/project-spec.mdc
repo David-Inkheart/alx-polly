@@ -1,7 +1,7 @@
 ---
 description: Core rules, conventions, and architectural guidelines for the Polling App with QR Code Sharing project.
 globs:
-  alwaysApply: true
+alwaysApply: true
 ---
 
 ## Project Overview: Polling App with QR Code Sharing
@@ -54,3 +54,16 @@ Before finalizing your response, you MUST verify the following:
 - Is the Supabase client used for all database interactions?
 - Are shadcn/ui components used for the UI where appropriate?
 - Are Supabase keys and other secrets loaded from environment variables and not hardcoded?
+
+## CI/CD
+
+- Commit messages are very brief and follows the conventional commit message format.
+- CI/CD pipeline is set up for the project.
+- CI/CD pipeline is configured to run tests and deploy the project.
+- CI/CD pipeline is configured to run linting and formatting checks.
+- CI/CD pipeline is configured to run security checks.
+- CI/CD pipeline is configured to run performance checks.
+- CI/CD pipeline is configured to run accessibility checks.
+- CI/CD pipeline is configured to run SEO checks.
+- CI/CD pipeline is configured to run best practices checks.
+- CI/CD pipeline is configured to run performance checks.

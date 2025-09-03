@@ -1,3 +1,8 @@
 {
-  "cSpell.words": ["qrcode", "shadcn", "supabase"]
+  "[typescript]": {
+    "editor.defaultFormatter": "denoland.vscode-deno"
+  },
+  "cSpell.words": ["qrcode", "shadcn", "supabase"],
+  "deno.lint": true,
+  "workbench.editor.enablePreview": false
 }

@@ -1,71 +1,14 @@
-'use client';
+import { getPolls } from '@/lib/actions/polls';
+import PollsClient from '@/components/polls-client';
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import Link from 'next/link';
-import { signOut } from '@/lib/actions/auth';
-import { useRouter } from 'next/navigation';
+export const dynamic = 'force-dynamic';
 
-const polls = [
-  {
-    id: '1',
-    question: 'Favorite programming language?',
-    totalVotes: 540,
-  },
-  {
-    id: '2',
-    question: 'Best framework for frontend?',
-    totalVotes: 320,
-  },
-  {
-    id: '3',
-    question: 'Tabs vs. Spaces?',
-    totalVotes: 1020,
-  },
-];
-
-export default function PollsPage() {
-  const router = useRouter();
-
-  const handleLogout = async () => {
-    try {
-      await signOut();
-    } catch (error) {
-      console.error('Logout failed:', error);
-      // Force redirect even if logout fails
-      router.push('/');
-    }
-  };
-
-  return (
-    <div className='container mx-auto p-4'>
-      <div className='flex justify-between items-center mb-6'>
-        <h1 className='text-2xl font-bold'>Polls Dashboard</h1>
-        <div className='flex gap-2'>
-          <Button asChild variant='outline'>
-            <Link href='/polls/create'>Create New Poll</Link>
-          </Button>
-          <Button onClick={handleLogout} variant='outline'>
-            Logout
-          </Button>
-        </div>
-      </div>
-      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
-        {polls.map((poll) => (
-          <Link href={`/polls/${poll.id}`} key={poll.id}>
-            <Card className='hover:shadow-lg transition-shadow'>
-              <CardHeader>
-                <CardTitle className='truncate'>{poll.question}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className='text-sm text-muted-foreground'>
-                  {poll.totalVotes} votes
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
+export default async function PollsPage() {
+  try {
+    const polls = await getPolls();
+    return <PollsClient initialPolls={polls} />;
+  } catch (error) {
+    console.error('Error fetching polls:', error);
+    return <PollsClient initialPolls={[]} error='Failed to load polls' />;
+  }
 }
