@@ -1,19 +1,50 @@
+/**
+ * API route for handling poll voting operations
+ * Processes individual votes and manages vote validation
+ *
+ * Why this route exists:
+ * - Ensures one vote per user per poll (prevents fraud)
+ * - Validates poll and option relationships
+ * - Provides atomic vote casting with proper error handling
+ * - Maintains data integrity through database constraints
+ */
+
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
 
+/**
+ * Vote request payload interface
+ * Defines the expected structure of vote submission data
+ */
 interface VoteRequest {
   optionId: string;
 }
 
+/**
+ * Handles POST requests to cast a vote on a poll option
+ *
+ * What it does: Processes vote submissions with comprehensive validation
+ * Why it validates:
+ * - Authentication: Ensures only logged-in users can vote
+ * - Option verification: Confirms option belongs to the specified poll
+ * - Duplicate prevention: Blocks multiple votes from same user
+ * - Data integrity: Maintains consistent vote counts and relationships
+ *
+ * @param request - Next.js request object containing vote data
+ * @param params - Route parameters containing poll ID
+ * @returns Promise<NextResponse> - API response with vote result or error
+ */
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Extract poll ID from route parameters - this identifies which poll the vote is for
     const { id: pollId } = await params;
     const supabase = await createSupabaseServerClient();
 
-    // Get current user
+    // SECURITY: Authenticate user - voting requires login to prevent anonymous manipulation
+    // Why: Ensures accountability and prevents spam/bot voting
     const { data: { user }, error: userError } = await supabase.auth.getUser();
 
     if (userError || !user) {
@@ -23,10 +54,11 @@ export async function POST(
       );
     }
 
-    // Parse request body
+    // Parse and validate request body containing the vote data
     const body: VoteRequest = await request.json();
     const { optionId } = body;
 
+    // VALIDATION: Ensure option ID is provided - prevents malformed requests
     if (!optionId) {
       return NextResponse.json(
         { error: 'Option ID is required' },
@@ -34,12 +66,14 @@ export async function POST(
       );
     }
 
-    // Verify the option belongs to the poll
+    // SECURITY: Verify option belongs to poll - prevents cross-poll voting attacks
+    // Why: A malicious user could try to vote on options from different polls
+    // by manipulating the optionId parameter
     const { data: option, error: optionError } = await supabase
       .from('poll_options')
       .select('id, poll_id')
       .eq('id', optionId)
-      .eq('poll_id', pollId)
+      .eq('poll_id', pollId) // Critical: Ensures option belongs to this specific poll
       .single();
 
     if (optionError || !option) {
@@ -49,8 +83,9 @@ export async function POST(
       );
     }
 
-    // Check if user has already voted
-    const { data: existingVote, error: voteCheckError } = await supabase
+    // FRAUD PREVENTION: Check for duplicate votes - enforces one-vote-per-user rule
+    // Why: Database constraints alone aren't sufficient; this provides immediate feedback
+    const { data: existingVote } = await supabase
       .from('votes')
       .select('id')
       .eq('poll_id', pollId)
@@ -60,11 +95,12 @@ export async function POST(
     if (existingVote) {
       return NextResponse.json(
         { error: 'You have already voted on this poll' },
-        { status: 400 }
+        { status: 409 } // Conflict status for duplicate attempts
       );
     }
 
-    // Cast the vote
+    // ATOMIC OPERATION: Cast the vote in database
+    // Why: Single transaction ensures vote count accuracy and prevents race conditions
     const { error: voteError } = await supabase
       .from('votes')
       .insert({
@@ -73,7 +109,9 @@ export async function POST(
         user_id: user.id,
       });
 
+    // ERROR HANDLING: Handle database constraints and other errors
     if (voteError) {
+      // Handle unique constraint violation (duplicate vote attempt)
       if ((voteError as any).code === '23505') {
         return NextResponse.json(
           { error: 'You have already voted on this poll' },

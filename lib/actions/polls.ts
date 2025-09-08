@@ -1,9 +1,21 @@
 'use server';
 
+/**
+ * Server actions for poll management operations
+ * Handles creating, reading, updating, and deleting polls
+ */
+
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
+/**
+ * Creates a new poll with options
+ *
+ * @param formData - Form data containing question and options
+ * @returns Promise<{ success: boolean; message?: string; pollId?: string }>
+ *          Returns success status with poll ID on creation or error message
+ */
 export async function createPoll(formData: FormData) {
   const supabase = await createSupabaseServerClient();
 

@@ -1,9 +1,21 @@
 'use server';
 
+/**
+ * Server actions for authentication flows
+ * Handles user sign-in, sign-up, and sign-out operations
+ */
+
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
+/**
+ * Signs in a user with email and password
+ *
+ * @param formData - Form data containing email and password
+ * @returns Promise<{ success: boolean; error?: string; status?: number }>
+ *          Returns success status or error details with appropriate HTTP status codes
+ */
 export async function signIn(formData: FormData) {
   const supabase = await createSupabaseServerClient();
   const email = formData.get('email') as string;

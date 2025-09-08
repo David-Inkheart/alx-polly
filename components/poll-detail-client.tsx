@@ -1,3 +1,16 @@
+/**
+ * Client component for displaying detailed poll view with voting functionality
+ *
+ * What it does: Shows poll details, handles voting, and displays results
+ * Why it exists:
+ * - Provides interactive voting experience for authenticated users
+ * - Shows real-time vote counts and percentages
+ * - Prevents multiple votes from same user
+ * - Handles both voting and results viewing states
+ * - Implements optimistic updates for immediate feedback
+ * - Manages authentication state for vote eligibility
+ */
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -8,12 +21,18 @@ import { createSupabaseBrowserClient } from '@/lib/supabase';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { VoteResult } from './vote-result';
 
+/**
+ * Poll option data structure with vote count
+ */
 interface PollOption {
   id: string;
   text: string;
   votes_count: number;
 }
 
+/**
+ * Complete poll data structure with metadata and options
+ */
 interface Poll {
   id: string;
   question: string;
@@ -23,10 +42,22 @@ interface Poll {
   poll_options: PollOption[];
 }
 
+/**
+ * Props for the PollDetailClient component
+ */
 interface PollDetailClientProps {
   poll: Poll;
 }
 
+/**
+ * Main component for displaying poll details and handling voting
+ *
+ * Why client-side:
+ * - Needs to track voting state and user authentication
+ * - Handles real-time vote count updates
+ * - Manages different UI states (voting vs. results)
+ * - Implements optimistic UI updates for voting
+ */
 export default function PollDetailClient({
   poll: initialPoll,
 }: PollDetailClientProps) {
@@ -72,7 +103,21 @@ export default function PollDetailClient({
     checkUserVote();
   }, [poll.id]);
 
+  /**
+   * Handles vote submission with optimistic UI updates
+   *
+   * Why optimistic updates:
+   * - Immediately shows vote in UI for instant feedback
+   * - Prevents multiple submissions while processing
+   * - Provides better perceived performance
+   * - Reverts on error to maintain data consistency
+   *
+   * Why client-side validation:
+   * - Prevents unnecessary API calls for invalid states
+   * - Provides immediate feedback for user errors
+   */
   const handleVote = async () => {
+    // CLIENT VALIDATION: Prevent invalid vote attempts
     if (!selectedOption || hasVoted || !currentUserId) return;
 
     setIsVoting(true);

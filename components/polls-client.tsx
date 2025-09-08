@@ -1,3 +1,15 @@
+/**
+ * Client component for displaying and managing user polls dashboard
+ *
+ * What it does: Renders a list of polls with management capabilities
+ * Why it exists:
+ * - Provides central hub for users to view all their created polls
+ * - Enables poll management (edit/delete) with proper authorization
+ * - Shows real-time poll statistics (votes, creation dates)
+ * - Handles authentication state and redirects appropriately
+ * - Implements optimistic UI updates for better user experience
+ */
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -10,12 +22,18 @@ import { useRouter } from 'next/navigation';
 import { createSupabaseBrowserClient } from '@/lib/supabase';
 import { Trash2, Edit } from 'lucide-react';
 
+/**
+ * Poll option data structure with vote count
+ */
 interface PollOption {
   id: string;
   text: string;
   votes_count: number;
 }
 
+/**
+ * Complete poll data structure with metadata
+ */
 interface Poll {
   id: string;
   question: string;
@@ -25,19 +43,32 @@ interface Poll {
   poll_options: PollOption[];
 }
 
+/**
+ * Props for the PollsClient component
+ */
 interface PollsClientProps {
   initialPolls: Poll[];
   error?: string;
 }
 
+/**
+ * Main component for displaying and managing user's polls
+ *
+ * Why client-side:
+ * - Needs user authentication state for authorization checks
+ * - Handles real-time UI updates after poll operations
+ * - Manages loading states for better UX
+ * - Implements optimistic updates for immediate feedback
+ */
 export default function PollsClient({ initialPolls, error }: PollsClientProps) {
   const [polls, setPolls] = useState<Poll[]>(initialPolls);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  // AUTHENTICATION: Fetch current user for authorization checks
+  // Why: Need user ID to determine if user can edit/delete specific polls
   useEffect(() => {
-    // Get current user
     const getCurrentUser = async () => {
       const supabase = createSupabaseBrowserClient();
       const {
@@ -59,7 +90,20 @@ export default function PollsClient({ initialPolls, error }: PollsClientProps) {
     }
   };
 
+  /**
+   * Handles poll deletion with user confirmation and optimistic UI updates
+   *
+   * Why confirmation dialog:
+   * - Prevents accidental deletions of polls with existing votes
+   * - Gives users chance to reconsider permanent data loss
+   *
+   * Why optimistic updates:
+   * - Removes poll from UI immediately for better perceived performance
+   * - Provides instant feedback while server request processes
+   * - Reverts on error to maintain data consistency
+   */
   const handleDeletePoll = async (pollId: string) => {
+    // USER SAFETY: Confirm deletion to prevent accidental data loss
     if (
       !confirm(
         'Are you sure you want to delete this poll? This action cannot be undone.'

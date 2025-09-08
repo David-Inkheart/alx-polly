@@ -1,3 +1,8 @@
+/**
+ * Client component for creating new polls
+ * Handles form validation, submission, and user feedback
+ */
+
 'use client';
 
 import PollForm from '@/components/poll-form';
@@ -8,6 +13,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 
+/**
+ * Zod schema for poll validation
+ */
 const pollSchema = z.object({
   question: z.string().min(5, 'Question must be at least 5 characters'),
   options: z
@@ -15,11 +23,20 @@ const pollSchema = z.object({
     .min(2, 'At least 2 options required'),
 });
 
+/**
+ * Create poll page component
+ * Manages poll creation workflow with validation and error handling
+ */
 export default function CreatePollPage() {
   const router = useRouter();
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [isCreating, setIsCreating] = useState(false);
+
+  /**
+   * Handles poll creation form submission
+   * Processes form data, creates poll, and manages user feedback
+   */
   const handleSubmit = async (data: z.infer<typeof pollSchema>) => {
     try {
       setIsCreating(true);

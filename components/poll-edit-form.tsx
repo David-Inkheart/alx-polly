@@ -1,3 +1,16 @@
+/**
+ * Client component for editing poll questions and options with data protection
+ *
+ * What it does: Provides form interface for poll modifications with voting safeguards
+ * Why it exists:
+ * - Enables poll creators to modify their polls safely
+ * - Prevents option changes after voting has started (data protection)
+ * - Allows question edits even after voting (non-destructive)
+ * - Provides clear UI feedback about edit restrictions
+ * - Implements form validation and error handling
+ * - Shows vote counts to inform editing decisions
+ */
+
 'use client';
 
 import { useState } from 'react';
@@ -10,6 +23,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { updatePoll } from '@/lib/actions/polls';
 
+/**
+ * Zod validation schema for poll editing
+ * Why these validations:
+ * - Question length: Ensures meaningful poll questions
+ * - Option requirements: Minimum 2 options for valid polls
+ * - Unique options: Prevents confusing duplicate choices
+ * - Non-empty options: Maintains poll integrity
+ */
 const pollSchema = z.object({
   question: z.string().trim().min(5, 'Question must be at least 5 characters'),
   options: z
@@ -40,6 +61,15 @@ interface PollEditFormProps {
   poll: Poll;
 }
 
+/**
+ * Form component for editing existing polls with voting protection
+ *
+ * Why conditional editing:
+ * - Question always editable (safe, doesn't affect vote integrity)
+ * - Options locked after voting (prevents data corruption)
+ * - Clear visual feedback about restrictions
+ * - Preserves voting history and statistics
+ */
 function PollEditForm({ poll }: PollEditFormProps) {
   const router = useRouter();
   const [successMessage, setSuccessMessage] = useState<string>('');
