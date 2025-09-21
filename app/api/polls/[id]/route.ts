@@ -2,7 +2,7 @@ import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest, { params }: any) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const supabase = await createSupabaseServerClient();
 
   try {
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest, { params }: any) {
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: any) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -44,10 +44,11 @@ export async function DELETE(request: NextRequest, { params }: any) {
   }
 
   try {
+    const { id } = await params 
     const { data: poll, error: pollError } = await supabase
       .from('polls')
       .select('created_by')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (pollError) {
@@ -61,7 +62,7 @@ export async function DELETE(request: NextRequest, { params }: any) {
     const { error: deleteError } = await supabase
       .from('polls')
       .delete()
-      .eq('id', params.id);
+      .eq('id', id);
 
     if (deleteError) {
       return NextResponse.json({ message: `Failed to delete poll: ${deleteError.message}` }, { status: 500 });
@@ -75,7 +76,7 @@ export async function DELETE(request: NextRequest, { params }: any) {
   }
 }
 
-export async function PUT(request: NextRequest, { params }: any) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -100,6 +101,7 @@ export async function PUT(request: NextRequest, { params }: any) {
   }
 
   try {
+    const { id } = await params;
     const { data: existingPoll, error: pollError } = await supabase
       .from('polls')
       .select(`
@@ -111,7 +113,7 @@ export async function PUT(request: NextRequest, { params }: any) {
           votes_count
         )
       `)
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (pollError) {
@@ -137,7 +139,7 @@ export async function PUT(request: NextRequest, { params }: any) {
     const { error: updateError } = await supabase
       .from('polls')
       .update({ question: question.trim() })
-      .eq('id', params.id);
+      .eq('id', id);
 
     if (updateError) {
       return NextResponse.json({ message: `Failed to update poll: ${updateError.message}` }, { status: 500 });
@@ -147,14 +149,14 @@ export async function PUT(request: NextRequest, { params }: any) {
       const { error: deleteOptionsError } = await supabase
         .from('poll_options')
         .delete()
-        .eq('poll_id', params.id);
+        .eq('poll_id', id);
 
       if (deleteOptionsError) {
         return NextResponse.json({ message: `Failed to update poll options: ${deleteOptionsError.message}` }, { status: 500 });
       }
 
       const optionsToInsert = validOptions.map((option: string) => ({
-        poll_id: params.id,
+        poll_id: id,
         text: option.trim(),
       }));
 
@@ -168,7 +170,7 @@ export async function PUT(request: NextRequest, { params }: any) {
     }
 
     revalidatePath('/polls');
-    revalidatePath(`/polls/${params.id}`);
+    revalidatePath(`/polls/${id}`);
     return NextResponse.json({ success: true, message: 'Poll updated successfully!' }, { status: 200 });
   } catch (error: any) {
     console.error('Poll update error:', error);
