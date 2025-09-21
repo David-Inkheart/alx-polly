@@ -2,10 +2,11 @@ import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: any) {
   const supabase = await createSupabaseServerClient();
 
   try {
+    const { id } = await params 
     const { data: poll, error } = await supabase
       .from('polls')
       .select(`
@@ -14,13 +15,13 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         created_at,
         total_votes,
         created_by,
-        poll_options (
+        poll_options:poll_options!poll_options_poll_id_fkey (
           id,
           text,
           votes_count
         )
       `)
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (error) {
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: any) {
   const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -74,7 +75,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: any) {
   const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -104,7 +105,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       .select(`
         created_by,
         total_votes,
-        poll_options (
+        poll_options:poll_options!poll_options_poll_id_fkey (
           id,
           text,
           votes_count

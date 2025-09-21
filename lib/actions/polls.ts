@@ -103,20 +103,19 @@ export async function getPolls() {
 
   try {
     const { data: polls, error } = await supabase
-      .from('polls')
-      .select(`
-        id,
-        question,
-        created_at,
-        total_votes,
-        created_by,
-        poll_options (
-          id,
-          text,
-          votes_count
-        )
-      `)
-      .order('created_at', { ascending: false });
+  .from("polls")
+  .select(`
+    id,
+    question,
+    created_at,
+    created_by,
+    total_votes,
+    poll_options:poll_options!poll_options_poll_id_fkey (
+      id,
+      text,
+      votes_count
+    )
+  `).order('created_at', { ascending: false });
 
     if (error) {
       throw new Error(`Failed to fetch polls: ${error.message}`);
@@ -141,7 +140,7 @@ export async function getPollById(pollId: string) {
         created_at,
         total_votes,
         created_by,
-        poll_options (
+        poll_options:poll_options!poll_options_poll_id_fkey (
           id,
           text,
           votes_count

@@ -34,7 +34,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Redirect logged-in users from auth pages
-  if (session && request.nextUrl.pathname.startsWith('/auth')) {
+  if (session && (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/signup')) {
     return NextResponse.redirect(new URL('/polls', request.url));
   }
 
