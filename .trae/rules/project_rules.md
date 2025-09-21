@@ -20,7 +20,7 @@ The project uses the following technologies. Do not introduce new libraries or f
 - Styling: Tailwind CSS with shadcn/ui components
 - State Management: Primarily Server Components for server state. Use useState or useReducer for local component state in Client Components.
 - API Communication: Use Next.js Server Actions for mutations (creating polls, voting). Fetch data in Server Components using the Supabase client.
-- Utility Libraries: A library like qrcode.react for generating QR codes.
+- Utility Libraries: qrcode.react or similar library for generating QR codes.
 
 ## Architecture & Code Style
 
@@ -60,10 +60,10 @@ Before finalizing your response, you MUST verify the following:
 - Commit messages are very brief and follows the conventional commit message format.
 - CI/CD pipeline is set up for the project.
 - CI/CD pipeline is configured to run tests and deploy the project.
-- CI/CD pipeline is configured to run linting and formatting checks.
-- CI/CD pipeline is configured to run security checks.
-- CI/CD pipeline is configured to run performance checks.
-- CI/CD pipeline is configured to run accessibility checks.
-- CI/CD pipeline is configured to run SEO checks.
-- CI/CD pipeline is configured to run best practices checks.
-- CI/CD pipeline is configured to run performance checks.
+- CI/CD pipeline includes the following automated checks:
+  - Linting and formatting
+  - Security scanning
+  - Performance analysis
+  - Accessibility compliance
+  - SEO optimization
+  - Best practices validation

@@ -13,12 +13,12 @@ jest.mock('@/lib/supabase', () => ({
   })),
 }));
 
-jest.mock('../lib/actions/polls', () => ({
+jest.mock('@/lib/actions/polls', () => ({
   getPolls: jest.fn(),
   deletePoll: jest.fn(),
 }));
 
-jest.mock('../lib/actions/auth', () => ({
+jest.mock('@/lib/actions/auth', () => ({
   signOut: jest.fn(),
 }));
 

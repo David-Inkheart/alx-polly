@@ -18,11 +18,11 @@ export default {
     '^@/lib/supabase$': '<rootDir>/__mocks__/lib/supabase.js',
     '^next/navigation$': '<rootDir>/__mocks__/next/navigation.js',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
-    '\\.(jpg|jpeg|png|gif|webp|svg)$': '<rootDir>/__mocks__/fileMock.js',
+    '^undici$': '<rootDir>/__mocks__/undici.js',
   },
   transform: {
     '^.+\\.(ts|tsx)$': 'babel-jest',
-    '^.+\\.(js|jsx)$': 'babel-jest',
+    '^.+\\.(js|jsx|mjs)$': 'babel-jest',
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
 };
