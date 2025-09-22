@@ -1,10 +1,14 @@
-export default {
+import nextJest from 'next/jest.js';
+
+const createJestConfig = nextJest({
+  dir: './',
+});
+
+const customJestConfig = {
   testEnvironment: 'jest-environment-jsdom',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.mjs'],
   moduleNameMapper: {
     '^@/components/(.*)$': '<rootDir>/components/$1',
-    '^@/lib/actions/auth$': '<rootDir>/__mocks__/lib/actions/auth.js',
-    '^@/lib/actions/polls$': '<rootDir>/__mocks__/lib/actions/polls.js',
     '^@/app/(.*)$': '<rootDir>/app/$1',
     '^@/lib/(.*)$': '<rootDir>/lib/$1',
     '^@/utils/(.*)$': '<rootDir>/utils/$1',
@@ -20,9 +24,7 @@ export default {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     '^undici$': '<rootDir>/__mocks__/undici.js',
   },
-  transform: {
-    '^.+\\.(ts|tsx)$': 'babel-jest',
-    '^.+\\.(js|jsx|mjs)$': 'babel-jest',
-  },
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+  // No transform section needed, @next/jest handles SWC transpilation
 };
+
+export default createJestConfig(customJestConfig);
