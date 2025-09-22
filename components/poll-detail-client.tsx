@@ -18,8 +18,13 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { createSupabaseBrowserClient } from '@/lib/supabase';
-import { VoteResult } from './vote-result';
-import { QRCodeCanvas } from 'qrcode.react';
+import PollResultsChart from './poll-results-chart';
+import dynamic from 'next/dynamic';
+
+const ClientQRCodeCanvas = dynamic(
+  () => import('./client-qr-code-canvas'),
+  { ssr: false }
+);
 
 /**
  * Poll option data structure with vote count
@@ -240,7 +245,7 @@ export default function PollDetailClient({
 
       {/* Results */}
       {(hasVoted || !currentUserId) && (
-        <VoteResult
+        <PollResultsChart
           question={poll.question}
           options={poll.poll_options.map((option) => ({
             text: option.text,
@@ -267,9 +272,7 @@ export default function PollDetailClient({
           <CardTitle>Share this Poll</CardTitle>
         </CardHeader>
         <CardContent className='flex justify-center'>
-          {typeof window !== 'undefined' && (
-            <QRCodeCanvas value={window.location.href} size={256} level='H' />
-          )}
+          <ClientQRCodeCanvas pollId={poll.id} size={256} level='H' />
         </CardContent>
       </Card>
     </div>
